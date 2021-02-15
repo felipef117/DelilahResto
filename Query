@@ -1,0 +1,72 @@
+DROP DATABASE IF EXISTS delilah_database;
+CREATE DATABASE delilah_database;
+USE delilah_database;
+
+CREATE TABLE usuarios (
+  usuario_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  usuario VARCHAR(30) NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  telefono INT NOT NULL,
+  direccion VARCHAR(100) NOT NULL,
+  password VARCHAR(100) NOT NULL,
+  is_admin BOOLEAN NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+INSERT INTO usuarios VALUES
+(1, 'admin', 'Andres Acosta', 'andresacosta@delilah.com', 258741369, 'calle 1 25-30 edif. Encuentrelo', '0192023a7bbd73250516f069df18b500', 1);
+
+
+CREATE TABLE productos (
+	producto_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    plato VARCHAR(30) NOT NULL,
+    descripcion VARCHAR(100) NOT NULL,
+    precio INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+INSERT INTO productos  VALUES
+(1, 'Bagel de salmón', 'BagSal', 425),
+(2, 'Hamburguesa clásica', 'HamClas', 350),
+(3, 'Sandwich veggie', 'SandVegg', 310),
+(4, 'Ensalada veggie', 'EnsaVegg', 340),
+(5, 'Focaccia', 'Focaccia', 300),
+(6, 'Sandwich Focaccia', 'SandFocac', 440);
+
+
+CREATE TABLE estados (
+  estado_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  estado VARCHAR(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+INSERT INTO estados VALUES
+(1, 'NUEVO'),
+(2, 'CONFIRMADO'),
+(3, 'PREPARANDO'),
+(4, 'ENVIADO'),
+(5, 'ENTREGADO'),
+(6, 'CANCELADO'); 
+
+CREATE TABLE formas_pago (
+  pago_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  forma_pago VARCHAR(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+INSERT INTO formas_pago VALUES
+(1, 'Efectivo'),
+(2, 'Tarjeta');
+
+CREATE TABLE pedidos (
+  pedido_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  usuario_id INT NOT NULL,
+  total_pedido INT NOT NULL,
+  estado_id INT NOT NULL DEFAULT '1',
+  pago_id INT NOT NULL,
+  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(estado_id) REFERENCES estados(estado_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(pago_id) REFERENCES formas_pago(pago_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE productosporpedido (
+  pedido_id INT NOT NULL,
+  producto_id INT NOT NULL,
+  cantidad INT NOT NULL,
+  FOREIGN KEY(pedido_id) REFERENCES pedidos(pedido_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(producto_id) REFERENCES productos(producto_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

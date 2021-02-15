@@ -1,0 +1,448 @@
+swagger: '2.0'
+info:
+  title: 'Delilah Resto'
+  description: 'API en la que te puedesregistrar para realizar pedidos de comida.'
+  version: '1.0.0'
+  contact:
+    email: 'andresf117@gmail.com'
+  license:
+    name: 'MIT License'
+    url: 'https://opensource.org/licenses/MIT'
+host: 'localhost:3000'
+basePath: '/api/v1'
+tags:
+  - name: 'usuarios'
+    description: 'Operaciones de usuarios.'
+  - name: 'productos'
+    description: 'Operaciones de productos.'
+  - name: 'pedidos'
+    description: 'Operaciones de pedidos'
+schemes:
+  - 'https'
+  - 'http'
+
+paths:
+  /usuarios/registro:
+    post:
+      tags:
+        - 'usuarios'
+      summary: 'Registrar un usuario nuevo.'
+      description: ''
+      operationId: 'agregarUsuario'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Se enviá un objeto con la información requerida para registrar un usuario.'
+          required: true
+          schema:
+            $ref: '#/definitions/Usuario'
+      responses:
+        201:
+          description: 'Usuario registrado exitosamente.'
+        400:
+          description: 'Error en el formato del campo usuario.'
+        500:
+          description: 'Error interno del servidor.'
+  
+  /usuarios/login:
+    post:
+      tags:
+        - usuarios
+      summary: 'Inicio de sesión. Retorna JWT.'
+      description: ''
+      operationId: 'login'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: body
+          name: 'body'
+          description: 'Credenciales de usuario.'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              email:
+                type: 'string'
+                format: 'email'
+              password:
+                type: 'string'
+      responses:
+        200:
+          description: Muestra el jwt del usuario que se logueado
+          schema:
+            type: 'string'
+            properties:
+              message:
+                type: 'string'
+        401:
+          description: 'Usuario y/o contraseña incorrectos.'
+        500:
+          description: 'Error interno del servidor.'
+  
+  /productos:
+    get:
+      tags:
+        - productos
+      summary: 'Se obtienen todos los productos.'
+      description: ''
+      operationId: 'getProductos'
+      produces:
+        - 'application/json'
+      responses:
+        200:
+          description: 'Arreglo de productos.'
+          schema:
+            type: 'array'
+            items:
+              type: 'object'
+              properties:
+                producto_id:
+                  type: 'integer'
+                plato:
+                  type: 'string'
+                descripcion:
+                  type: 'string'
+                precio:
+                  type: 'number'
+        500:
+          description: 'Error interno del servidor.'
+
+    post:
+      tags:
+        - productos
+      summary: 'Crea un producto nuevo.'
+      description: ''
+      operationId: 'crearProducto'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'JWT del administrador.'
+          required: true
+        - in: body
+          name: 'body'
+          schema:
+            $ref: '#/definitions/Producto'
+      responses:
+        200:
+          description: 'Producto creado con éxito.'
+        403:
+          description: 'No autorizado.'
+        500:
+          description: 'Error interno del servidor.'
+  
+  /productos/{productoId}:
+    get:
+      tags:
+        - productos
+      summary: 'Se obtiene el producto del ID que se específica.'
+      description: ''
+      operationId: 'getProducto'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: path
+          name: productoId
+          description: 'ID del producto que se desea consultar.'
+          required: true
+          type: integer
+      responses:
+        200:
+          description: 'Información del producto.'
+          schema:
+            type: 'object'
+            properties:
+              producto_id:
+                type: 'integer'
+              plato:
+                type: 'string'
+              descripcion:
+                type: 'string'
+              precio:
+                type: 'number'
+                format: 'int'
+        404:
+          description: 'Producto no encontrado.'
+    
+    put:
+      tags:
+        - productos
+      summary: 'Actualiza el producto del ID especificado'
+      description: ''
+      operationId: 'updateProducto'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'JWT del administrador.'
+          required: true
+        - in: path
+          name: productoId
+          description: 'ID del producto que se desea actualizar.'
+          required: true
+          type: integer
+        - in: body
+          name: body
+          description: 'Objeto del producto con los campos para actualizar.'
+          required: true
+          schema:
+            $ref: '#/definitions/Producto'
+      responses:
+        200:
+          description: 'Producto actualizado con éxito.'
+        403:
+          description: 'No autorizado.'
+        500:
+          description: 'Error interno del servidor.'
+  
+    delete:
+      tags:
+        - productos
+      summary: 'Elimina producto del ID especificado.'
+      description: ''
+      operationId: 'deleteProducto'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'JWT de administrador.'
+          required: true
+        - in: path
+          name: productoId
+          description: 'ID del producto a eliminar.'
+          required: true
+          type: integer
+      responses:
+        200:
+          description: 'Producto borrado exitosamente'
+        403:
+          description: 'No autorizado.'
+        404:
+          description: 'Producto no encontrado.'
+        500:
+          description: 'Error interno del servidor.'
+  
+  /pedidos:
+    get:
+      tags:
+        - pedidos
+      summary: 'Muestra todos los pedidos del sistema.'
+      description: ''
+      operationId: 'getAllPedidos'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'Con el JWT de administrador muestra todos los pedidos del sistema, con el JWT del usuario muestra solo sus pedidos.'
+          required: true
+      responses:
+        200:
+          description: 'Arreglo con todos los pedidos realizados por todos los usuarios si esta logueado el admin, o arreglo con todos los pedidos del usuario que este logueado.'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Pedido'
+        401:
+          description: 'Error de autenticación.'
+        500:
+          description: 'Error interno del servidor.'
+   
+    post:
+      tags:
+        - pedidos
+      summary: 'Crear pedido asociado a la sesión actual.'
+      description: ''
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'JWT del usuario o del administrador.'
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              productos:
+                type: 'array'
+                items:
+                  $ref: '#/definitions/Orden'
+              pago_id:
+                type: 'integer'
+              total_pedido:
+                type: 'integer'
+      responses:
+        200:
+          description: '¡Recibimos tu pedido! "Nombre del Usuario", gracias por pedir a Delilah. Puedes seguir tu pedido para saber dónde está.'
+        401:
+          description: 'Error de autenticación.'
+        500:
+          description: 'Error interno del servidor.'
+  
+  /pedidos/{id}:
+    get:
+      tags:
+        - pedidos
+      summary: 'Se obtiene el pedido con el ID especificado solo si pertenece a la sesión actual o si es la sesión del administrador.'
+      description: ''
+      operationId: 'getPedido'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'Con el JWT de administrador muestra el pedidos del ID especificado, con el JWT del usuario muestra el pedido solo si le pertenece.'
+          required: true
+        - in: path
+          name: id
+          description: 'ID del pedido que se desea consultar.'
+          required: true
+          type: integer
+      responses:
+        200:
+          description: 'Información del pedido y sus productos asociados.'
+          schema:
+            $ref: '#/definitions/Pedido'
+        401:
+          description: 'Error de autenticación.'
+        404:
+          description: 'Pedido no encontrado.'
+        500:
+          description: 'Error interno del servidor.'
+    
+    patch:
+      tags:
+        - pedidos
+      summary: 'Permite actualizar el estado de un pedido.'
+      description: ''
+      operationId: 'updatePedido'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: header
+          name: 'jwtUsuario'
+          type: 'string'
+          format: 'jwt'
+          description: 'JWT del administrador.'
+          required: true
+        - in: path
+          name: id
+          description: 'ID del pedido que se desea actualizar.'
+          required: true
+          type: integer
+        - in: body
+          name: body
+          description: 'ID del estado al que se desea actualizar el pedido.'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              estado_id:
+                type: 'integer'
+      responses:
+        200:
+          description: 'El estado del pedido se ha actualizado con éxito.'
+        401:
+          description: 'Error de autenticación.'
+        403:
+          description: 'No autorizado, por favor ingresar como administrador.'
+        500:
+          description: 'Error interno del servidor.'
+  
+definitions:
+  Usuario:
+    type: 'object'
+    required:
+      - usuario
+      - nombre
+      - email
+      - telefono
+      - direccion
+      - password
+    properties:
+      usuario:
+        type: 'string'
+        minLength: 4
+      nombre:
+        type: 'string'
+      email:
+        type: 'string'
+        format: 'email'
+      telefono:
+        type: 'string'
+      direccion:
+        type: 'string'
+      password:
+        type: 'string'
+  
+  Producto:
+    type: 'object'
+    properties:
+      plato:
+        type: 'string'
+      descripcion:
+        type: 'string'
+      precio:
+        type: 'string'
+  Orden:
+    type: 'object'
+    properties:
+      producto_id:
+        type: 'integer'
+      cantidad:
+        type: 'integer'
+  
+  Pedido:
+    type: 'object'
+    properties:
+      Pedido:
+        type: 'integer'
+      Estado:
+        type: 'string'
+      Hora:
+        type: 'string'
+        format: 'date-time'
+      Detalle:
+        type: 'string'
+      Total:
+        type: 'number'
+      Forma de pago:
+        type: 'string'
+      Usuario:
+        type: 'string'
+      Direccion:
+        type: 'string'
+ 
+externalDocs:
+  description: 'GitHub Repo'
+  url: 'https://github.com/felipef117/DelilahResto'
