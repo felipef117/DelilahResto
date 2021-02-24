@@ -221,7 +221,7 @@ app.get("/productos/:productoId", autenticacionUser, async (req, res) => {
 });
 
 //crear pedido
-app.post("/pedido", autenticacionUser, async (req, res) => {
+app.post("/pedidos", autenticacionUser, async (req, res) => {
     const productos = req.body.productos;
     const pago_id = req.body.pago_id;
     const total_pedido = req.body.total_pedido;
@@ -262,7 +262,6 @@ app.post("/pedido", autenticacionUser, async (req, res) => {
 });
 
 //consultar pedidos
-
 app.get("/pedidos", autenticacionUser, async (req, res) => {
     if(req.authorizationInfo.usuario_id != 1) {
         try{
@@ -296,7 +295,6 @@ app.get("/pedidos", autenticacionUser, async (req, res) => {
 })
 
 //consultar pedido por id
-
 app.get("/pedidos/:id", autenticacionUser, async (req, res) => {
     if(req.authorizationInfo.usuario_id != 1) {
         try{
@@ -372,6 +370,30 @@ app.patch("/pedidos/:id", autenticacionUser, async (req, res) => {
     }
 });
 
+// borrar pedido
+app.delete("/pedidos/:id", autenticacionUser, async (req, res) => {
+    const pedido_id = req.params.id;
+    if (req.authorizationInfo.admin === 1) {
+        try{  
+            await db.sequelize.query(
+                "DELETE FROM pedidos WHERE pedido_id = :pedido_id",
+                {
+                    replacements: {
+                        pedido_id: pedido_id,
+                    },
+                    type: db.sequelize.QueryTypes.DELETE,
+                }
+            );
+            res.status(200);
+            res.send("El pedido se ha borrado con exito");      
+        }catch (err){
+            res.status(500);
+        }
+    }else{
+         res.status(403);
+         res.send("No autorizado, por favor ingresar como administrador");
+    }
+});
 
 app.listen(3000, () => {
     console.log("Server Corriendo en el puerto 3000");
